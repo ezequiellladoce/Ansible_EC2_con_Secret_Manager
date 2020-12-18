@@ -87,14 +87,42 @@ ansible-playbook Playbook/playbook.yml -u ec2-user --key-file key.pem
 
 ### Ejecutamos los comandos
 
-Ingresamos en la carpeta Public_ip_from_backend conde ejecutamos el codigo terraform Public_ip_from_backend.tf y ejecutamos los comandos:
+#### Obtenemos la ip Publica de la instancia y la insertamos en el archivo hosts
+
+1) Una vez ejecutado el procedimineto del repositorio https://github.com/ezequiellladoce/Despliegue_EC2_en_Infraestructura_Core_con_Secrets_Manager.
+2) En la carpeta Public_ip_from_backend ejecutamos los comandos:
 
 ```
+echo "[webservers]" > /etc/ansible/hosts
 terraform output pub_ip >> /etc/ansible/hosts
+ ```  
+
+Los que incertan la ip en el archivo hosts.  
+
+#### Obtenemos la clave desde el AWS Secrets Manager
+
+1) Clonamos el Repositorio https://github.com/ezequiellladoce/Ansible_EC2_con_Secret_Manager.git
+2) Dentro de la carpeta Ansible_EC2_con_Secret_Manager ejecutamo los comandos:
+ 
+```
 aws secretsmanager get-secret-value --secret-id "EC2-key-4" --region "us-east-2" --query 'SecretString' --output text > key.pem
 chmod 400 key.pem 
 cat key.pem
+
+```
+Que bajaran la clave desde el secret manager y la guardará en el archivo key.pem
+
+#### Ejecutamos la configuracion en la instancia
+
+1) Corremos el comando ansible ping para verificar la comunicación con la instancia:
+
+```
 ansible all -m ping -u ec2-user --key-file key.pem
+
+```
+2) Ejecutamos el comando ansible-playbook para que instale lo indicado en el playbook. 
+
+```
 ansible-playbook Playbook/playbook.yml -u ec2-user --key-file key.pem
 
 ```
